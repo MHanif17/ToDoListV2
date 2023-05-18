@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const _ = require("lodash");
 
 const app = express();
+const PORT = process.env.PORT || 3000
 
 app.set('view engine', 'ejs');
 
@@ -13,7 +14,15 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
 mongoose.set('strictQuery', true);
-mongoose.connect('mongodb+srv://hanif-admin:Hanif2001@cluster0.go6la0p.mongodb.net/todolistDB', {useNewUrlParser: true});
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+}
 
 const itemsSchema = {
   name: String
@@ -136,6 +145,8 @@ app.get("/about", function(req, res){
   res.render("about");
 });
 
-app.listen(3000, function() {
-  console.log("Server started on port 3000");
-});
+connectDB().then(() => {
+  app.listen(PORT, () => {
+      console.log("listening on port $(PORT)");
+  })
+})
